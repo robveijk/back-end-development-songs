@@ -84,3 +84,21 @@ def get_song_by_id(id: str):
     if not song:
         return make_response({"message": "song with id not found"}, 404)
     return make_response(parse_document(song), 200)
+
+@app.route("/song", methods=["POST"])
+def create_song() -> dict:
+    # Get payload
+    if not request.is_json:
+        return make_response({"message": "Invalid input parameter"}, 442)
+
+    # TODO: Add payload validation (!!)
+    song = request.get_json()
+    # Check if song already exists:
+    if db.songs.find_one({"id": (song_id := song.get("id"))}):
+        # return make_response({"message": "Song already exists"}, 409)  # 409 would make more sense to me...
+        return make_response({"Message": f"song with id {song_id} already present"}, 302)
+
+    # Add it:
+    db.songs.insert_one(song)
+
+    return make_response({"inserted id": parse_field(song.get("_id"))}, 201)
