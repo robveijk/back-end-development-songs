@@ -1,3 +1,6 @@
+from collections.abc import Mapping
+from typing import Any
+
 from . import app
 import os
 import json
@@ -57,3 +60,19 @@ def health_check():
 @app.route("/count", methods=["GET"])
 def count_songs():
     return make_response({"count": len(songs_list)}, 200)
+
+
+def parse_document(song: dict) -> dict:
+    return {k: parse_field(v) for k, v in song.items() }
+
+def parse_field(field: Any) -> Any:
+    if isinstance(field, ObjectId):
+        # make this similar to the example output
+        return {"$oid": str(field)}
+    return field
+
+@app.route("/song", methods=["GET"])
+def songs():  # Note: Used plural as it's required by the lab, but prefer singular (or get_song, actually)
+    cursor = db.songs.find({})  # Cursor object
+    songs = [parse_document(song) for song in cursor]
+    return make_response({"songs": songs}, 200)
