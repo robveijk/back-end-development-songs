@@ -133,3 +133,11 @@ def update_song(id: int):
     song = db.songs.find_one({"id": id})
     # return make_response({}, 204)  I feel this would make more sense than 201 CREATED
     return make_response(parse_document(song), 201)
+
+@app.route("/song/<int:id>", methods=["DELETE"])
+def delete_song(id: int):
+    delete_result = db.songs.delete_one({"id": id})
+    if delete_result.deleted_count == 0:
+        return make_response({"message":"song not found"}, 404)
+    # Song was deleted (let's assume there aren't more songs with the same id)
+    return make_response({"message": "song deleted"}, 204)
