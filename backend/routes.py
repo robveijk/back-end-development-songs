@@ -78,18 +78,25 @@ def songs():  # Note: Used plural as it's required by the lab, but prefer singul
     return make_response({"songs": songs}, 200)
 
 
+def song_not_found_response():
+    return make_response({"message": "song with id not found"}, 404)
+
 @app.route("/song/<int:id>", methods=["GET"])
 def get_song_by_id(id: str):
     song = db.songs.find_one({"id": id})
     if not song:
-        return make_response({"message": "song with id not found"}, 404)
+        return song_not_found_response()
     return make_response(parse_document(song), 200)
+
+
+def invalid_input_parameter_response():
+    return make_response({"message": "Invalid input parameter"}, 442)
 
 @app.route("/song", methods=["POST"])
 def create_song() -> dict:
     # Get payload
     if not request.is_json:
-        return make_response({"message": "Invalid input parameter"}, 442)
+        return invalid_input_parameter_response()
 
     # TODO: Add payload validation (!!)
     song = request.get_json()
@@ -102,3 +109,27 @@ def create_song() -> dict:
     db.songs.insert_one(song)
 
     return make_response({"inserted id": parse_field(song.get("_id"))}, 201)
+
+
+@app.route("/song/<int:id>", methods=["PUT"])
+def update_song(id: int):
+    # Find song to update:
+    song = db.songs.find_one({"id": id})
+    if not song:
+        # return song_not_found_response()  # This is consistent, but the lab is not...
+        return make_response({"message": "song not found"}, 404)
+
+    # Get payload
+    if not request.is_json:
+        return invalid_input_parameter_response()
+    updated_fields = request.get_json()
+
+    # Update the song
+    update_result = db.songs.update_one({"id": id}, {"$set": updated_fields})
+    if update_result.modified_count == 0:  # Nothing updated
+        return make_response({"message":"song found, but nothing updated"}, 200)
+
+    # Song was updated:
+    song = db.songs.find_one({"id": id})
+    # return make_response({}, 204)  I feel this would make more sense than 201 CREATED
+    return make_response(parse_document(song), 201)
