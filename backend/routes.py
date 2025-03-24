@@ -108,6 +108,7 @@ def create_song() -> dict:
     # Add it:
     db.songs.insert_one(song)
 
+    # TODO: Get inserted id from insert_one result
     return make_response({"inserted id": parse_field(song.get("_id"))}, 201)
 
 
