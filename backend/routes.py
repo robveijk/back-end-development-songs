@@ -48,6 +48,7 @@ db.songs.insert_many(songs_list)
 def parse_json(data):
     return json.loads(json_util.dumps(data))
 
-######################################################################
-# INSERT CODE HERE
-######################################################################
+
+@app.route("/health", methods=["GET"])
+def health_check():
+    return make_response({"status": "OK"}, 200)
