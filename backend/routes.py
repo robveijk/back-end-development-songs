@@ -52,3 +52,8 @@ def parse_json(data):
 @app.route("/health", methods=["GET"])
 def health_check():
     return make_response({"status": "OK"}, 200)
+
+
+@app.route("/count", methods=["GET"])
+def count_songs():
+    return make_response({"count": len(songs_list)}, 200)
