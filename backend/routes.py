@@ -76,3 +76,11 @@ def songs():  # Note: Used plural as it's required by the lab, but prefer singul
     cursor = db.songs.find({})  # Cursor object
     songs = [parse_document(song) for song in cursor]
     return make_response({"songs": songs}, 200)
+
+
+@app.route("/song/<int:id>", methods=["GET"])
+def get_song_by_id(id: str):
+    song = db.songs.find_one({"id": id})
+    if not song:
+        return make_response({"message": "song with id not found"}, 404)
+    return make_response(parse_document(song), 200)
